@@ -4,8 +4,9 @@ import os
 import sys
 import md5
 import ConfigParser
-from optparse import OptionParser
 import urllib2 as ul
+from bs4 import BeautifulSoup
+from optparse import OptionParser
 from time import gmtime, strftime
 
 usage="spider.py --verbose --seed=http://someplace.com/"
@@ -38,9 +39,6 @@ def getConfig():
 		dbpass = conf.get("Default", "dbpass")
 		dbname = conf.get("Default", "dbname")
 
-if options.verbose:
-	verbose = options.verbose
-
 ###
 
 def createTable():
@@ -69,6 +67,8 @@ def addSeed(seed):
 	cur.execute("TRUNCATE TABLE spider") 
 	cur.execute("INSERT INTO spider VALUES (NULL, %s, %s, '', 0, 0, 0, 0, NOW(), 1)", (seed, md5.md5(seed).hexdigest()))
 
+###
+
 def logMessage(message, log, verbose):
 	fmessage = "["
 	fmessage += strftime("%Y-%m-%d %H:%M:%S")
@@ -84,7 +84,8 @@ def logMessage(message, log, verbose):
 
 ###
 
-def dbHasContent(): # This is where we assume that we have a seed url if count != 0 
+def dbHasContent():
+	# This is where we assume that we have a seed url if count != 0 
 	cur = mdb.cursor()
 	cur.execute("SELECT COUNT(*) as cnt FROM `spider`")
 	data = cur.fetchone()
@@ -96,7 +97,8 @@ def dbHasContent(): # This is where we assume that we have a seed url if count !
 
 ###
 
-def getURLs(limit=5):
+def getURLsFromDb(limit=5):
+	# Get URLs from DB, limited to limit
 	cur = mdb.cursor()
 	cur.execute("SELECT `url` FROM `spider` WHERE `status` = 0 LIMIT %d", (limit))
 	rows = cur.fetchall()
@@ -105,40 +107,41 @@ def getURLs(limit=5):
 ###
 
 def getContentFromURL(url):
- # Get the content, return raw content
+ # Get the content, return raw
+ req = ul.Request(url)
+ response = ul.urlopen(req)
+ return response.read()
 
 ###
 
 def extractURLs(content):
-	# Use regex to extract URLs from html content, ignore anything that is a file or non-http/https href
+	urls = []
+	soup = BeautifulSoup(content)
+	for link in soup.find_all('a'):
+		urls.append(link.get('href'))
 
 ###
 
 def insertContent(urls, parent):
-	# Build BULK Query, insert to DB
 	cur = mdb.cursor()
 	for url in urls:
-		content_length = len(url[2]
+		content_length = len(url[2])
 		cur.execute("INSERT INTO spider VALUES (NULL, %s, %s, 1, %d, %s, %d, NOW(), 0)", (url, md5.md5(url).hexdigest()), len(url[2]), url[3], url[4]))
 
 ###
 
+## Try to connect to the DB, throw exception if failed
 try:
 	con = mdb.connect(dbhost, dbuser, dbpass, dbname)
 	logMessage("Connected to database Server.", log, verbose)
-
-	if dbHasContent() == False: # We will poorly assume the table doesn't exist and attempt to create it next
-		createTable()
-		logMessage("urls table not found.\nCreated." log, verbose)
-
-	try:
-		# This is where we do the bulk of the work 
-		# Would love to thread this, but it's far beyond my knowledge at the moment
-
 except:
 	err = "Error %d: %s" % (e.args[0], e.args[1])
 	logMessage(err, log, verbose)
 	sys.exit(1)
-finally:
-	if con:
-		con.close()
+
+if options.verbose:
+	verbose = options.verbose
+
+if not dbHasContent(): # We will poorly assume the table doesn't exist and attempt to create it next
+	createTable()
+	logMessage("urls table not found.\nCreated." log, verbose)
