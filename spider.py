@@ -58,7 +58,11 @@ def createTable():
 	fpt = cur.fetchone()
 
 	if ver["version()"].startswith("5.5") AND fpt["Value"] == "ON":
+		logMessage = "Detected MySQL 5.5 with innodb_file_per_table. Adding row compression."
 		sql += " row_format=compressed key_block_size=8"
+
+	cur = mdb.cursor()
+	cur.execute(sql)
 
 ###
 
