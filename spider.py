@@ -119,6 +119,7 @@ def extractURLs(content):
 	soup = BeautifulSoup(content)
 	for link in soup.find_all('a'):
 		urls.append(link.get('href'))
+	return urls
 
 ###
 
