@@ -22,6 +22,9 @@ def getConfig():
 		dbpass = conf.get("Default", "dbpass")
 		dbname = conf.get("Default", "dbname")
 
+		config = { 'log': log, 'perpass': perpass, 'dbhost': dbhost, 'dbuser': dbuser, 'dbpass': dbpass, 'dbname': dbname }
+		return config
+
 ###
 
 def createTable():
@@ -36,15 +39,15 @@ def createTable():
 	cur.execute("SELECT VERSION()")
 	ver = cur.fetchone()
 
-	cur = mdb.cursor()
 	cur.execute("SHOW GLOBAL VARIABLES LIKE 'innodb_file_per_table'")
 	fpt = cur.fetchone()
 
+	# Check if mysql version and configuration is capable of handling compressed rows
 	if ver["version()"].startswith("5.5") AND fpt["Value"] == "ON":
 		logMessage = "Detected MySQL 5.5 with innodb_file_per_table. Adding row compression."
 		sql += " row_format=compressed key_block_size=8"
 
-	cur = mdb.cursor()
+	# Create the table
 	cur.execute(sql)
 
 ###
@@ -96,10 +99,10 @@ def getURLsFromDb(limit=5):
 ###
 
 def getContentFromURL(url):
- # Get the content, return raw
- req = ul.Request(url)
- response = ul.urlopen(req)
- return response.read()
+	# Get the content, return raw
+	req = ul.Request(url)
+	response = ul.urlopen(req)
+	return response.read()
 
 ###
 
