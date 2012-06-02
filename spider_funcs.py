@@ -36,7 +36,7 @@ def createTable():
 	cur = mdb.cursor()
 	cur.execute("SHOW TABLES LIKE 'spider'")
 	tablexists = cur.fetchone()
-	if len(tablexists) != 1
+	if len(tablexists) == 1
 		# Determine if we are running MySQL 5.5 and if innodb_file_per_table is set
 		cur.execute("SELECT VERSION()")
 		ver = cur.fetchone()
@@ -98,7 +98,7 @@ def getURLsFromDb(limit=5):
 	cur.execute("SELECT `url` FROM `spider` WHERE `status` = 0 LIMIT %d", (limit))
 	rows = cur.fetchall()
 	for i in rows:
-		cur.execute("UPDATE `urls` SET `stats` = 1 WHERE `id` = %d", (i["id"]))
+		cur.execute("UPDATE `urls` SET `status` = 1 WHERE `id` = %d", (i["id"]))
 	return rows
 
 ###
@@ -123,5 +123,3 @@ def extractURLs(content):
 def insertContent(url, parent, content, time_taken):
 	cur = mdb.cursor()
 	cur.execute("INSERT INTO spider VALUES (NULL, %s, %s, %s, 1, %d, %s, %d, NOW(), 0)", (url, md5.md5(url).hexdigest(), parent, len(content), content, time_taken))
-
-###
