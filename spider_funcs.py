@@ -1,6 +1,6 @@
 def getConfig():
 	conf = ConfigParser.ConfigParser()
-	if os.path.exists("./spider.conf") == False:
+	if not os.path.exists("./spider.conf"):
 		conffile = open("./spider.conf")
 		conf.add_section("Default")
 		conf.set("Default", "dbhost", "localhost")
@@ -22,8 +22,7 @@ def getConfig():
 		dbpass = conf.get("Default", "dbpass")
 		dbname = conf.get("Default", "dbname")
 
-		config = { 'log': log, 'perpass': perpass, 'dbhost': dbhost, 'dbuser': dbuser, 'dbpass': dbpass, 'dbname': dbname }
-		return config
+		return { 'log': log, 'perpass': perpass, 'dbhost': dbhost, 'dbuser': dbuser, 'dbpass': dbpass, 'dbname': dbname }
 
 ###
 
@@ -34,21 +33,27 @@ def createTable():
 	sql += " `time_taken` int, `created` datetime, `is_seed` tinyint default 0, INDEX(`created`), INDEX(`url_hash`)"
 	sql += " ) engine=innodb"
 
-	# Determine if we are running MySQL 5.5 and if innodb_file_per_table is set
 	cur = mdb.cursor()
-	cur.execute("SELECT VERSION()")
-	ver = cur.fetchone()
+	cur.execute("SHOW TABLES LIKE 'spider'")
+	tablexists = cur.fetchone()
+	if len(tablexists) != 1
+		# Determine if we are running MySQL 5.5 and if innodb_file_per_table is set
+		cur.execute("SELECT VERSION()")
+		ver = cur.fetchone()
 
-	cur.execute("SHOW GLOBAL VARIABLES LIKE 'innodb_file_per_table'")
-	fpt = cur.fetchone()
+		# Determine if innodb_file_per_table is ON or not.
+		cur.execute("SHOW GLOBAL VARIABLES LIKE 'innodb_file_per_table'")
+		fpt = cur.fetchone()
 
-	# Check if mysql version and configuration is capable of handling compressed rows
-	if ver["version()"].startswith("5.5") AND fpt["Value"] == "ON":
-		logMessage = "Detected MySQL 5.5 with innodb_file_per_table. Adding row compression."
-		sql += " row_format=compressed key_block_size=8"
+		# Check if mysql version and configuration is capable of handling compressed rows
+		if ver["version()"].startswith("5.5") AND fpt["Value"] == "ON":
+			logMessage = "Detected MySQL 5.5 with innodb_file_per_table. Adding row compression."
+			sql += " row_format=compressed key_block_size=8"
 
-	# Create the table
-	cur.execute(sql)
+		# Create the table
+		cur.execute(sql)
+	else:
+		logMessage("Detected MySQL 5.5 with innodb_file_per_table. Adding row compression.", log, verbose)
 
 ###
 
