@@ -35,8 +35,8 @@ def createTable():
 
 	cur = mdb.cursor()
 	cur.execute("SHOW TABLES LIKE 'spider'")
-	tablexists = cur.fetchone()
-	if len(tablexists) == 1
+	exists = cur.fetchone()
+	if len(exists) == 1
 		# Determine if we are running MySQL 5.5 and if innodb_file_per_table is set
 		cur.execute("SELECT VERSION()")
 		ver = cur.fetchone()
@@ -47,7 +47,7 @@ def createTable():
 
 		# Check if mysql version and configuration is capable of handling compressed rows
 		if ver["version()"].startswith("5.5") AND fpt["Value"] == "ON":
-			logMessage = "Detected MySQL 5.5 with innodb_file_per_table. Adding row compression."
+			logMessage("Detected MySQL 5.5 with innodb_file_per_table. Adding row compression.", log, verbose)
 			sql += " row_format=compressed key_block_size=8"
 
 		# Create the table
