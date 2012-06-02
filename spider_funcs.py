@@ -36,7 +36,7 @@ def createTable():
 	cur = mdb.cursor()
 	cur.execute("SHOW TABLES LIKE 'spider'")
 	exists = cur.fetchone()
-	if len(exists) == 1
+	if len(exists) == 0:
 		# Determine if we are running MySQL 5.5 and if innodb_file_per_table is set
 		cur.execute("SELECT VERSION()")
 		ver = cur.fetchone()
