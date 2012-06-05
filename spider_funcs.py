@@ -132,4 +132,4 @@ def extractURLs(content):
 
 def insertContent(url, parent, content, time_taken):
 	cur = mdb.cursor()
-	cur.execute("INSERT INTO spider VALUES (NULL, %s, %s, %s, 1, %d, %s, %d, NOW(), 0)", (url, md5.md5(url).hexdigest(), parent, len(content), content, time_taken))
+	cur.execute("INSERT INTO spider VALUES (NULL, %s, %s, %s, 0, %d, %s, %d, NOW(), 0)", (url, md5.md5(url).hexdigest(), parent, len(content), content, time_taken))
