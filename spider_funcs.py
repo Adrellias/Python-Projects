@@ -116,7 +116,17 @@ def extractURLs(content):
 	soup = BeautifulSoup(content)
 	for link in soup.find_all('a'):
 		urls.append(link.get('href'))
-	return urls
+
+	uniq = set(urls)
+
+	fixedlist = []
+
+	for url in uniqlist:
+		strurl = str(url)
+		if strurl.startswith('http'):
+			fixedlist.append(strurl)
+
+	return fixedlist
 
 ###
 
