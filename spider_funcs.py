@@ -92,7 +92,7 @@ def dbHasContent():
 	cur.execute("SELECT COUNT(*) as cnt FROM `spider`")
 	data = cur.fetchone()
 
-	if data["cnt"] > 0:
+	if data[0] > 0:
 		return True
 	else:
 		return False

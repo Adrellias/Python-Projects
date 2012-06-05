@@ -3,6 +3,7 @@
 import os
 import sys
 import md5
+import time ## for timing the ul.urlopen process
 import ConfigParser
 import urllib2 as ul
 from bs4 import BeautifulSoup
