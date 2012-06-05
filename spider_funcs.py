@@ -118,10 +118,9 @@ def extractURLs(content):
 		urls.append(link.get('href'))
 
 	uniq = set(urls)
-
 	fixedlist = []
 
-	for url in uniqlist:
+	for url in uniq:
 		strurl = str(url)
 		if strurl.startswith('http'):
 			fixedlist.append(strurl)
