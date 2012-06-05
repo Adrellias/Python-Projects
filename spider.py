@@ -42,3 +42,4 @@ except:
 
 # And now we begin the work ...
 
+urls = getURLsFromDb()

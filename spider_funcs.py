@@ -58,9 +58,16 @@ def createTable():
 ###
 
 def addSeed(seed):
+	# Stuff it in the DB and fetch it prior to moving on.
 	cur = mdb.cursor()
-	cur.execute("TRUNCATE TABLE spider") 
-	cur.execute("INSERT INTO spider VALUES (NULL, %s, %s, '', 0, 0, 0, 0, NOW(), 1)", (seed, md5.md5(seed).hexdigest()))
+	cur.execute("TRUNCATE TABLE `spider`") 
+	cur.execute("INSERT INTO `spider` VALUES (NULL, %s, %s, '', 0, 0, 0, 0, NOW(), 1)", (seed, md5.md5(seed).hexdigest()))
+	content = getContentFromURL(seed)
+	urls = extractURLs(content)
+	for items in urls:
+
+
+	cur.execute("UPDATE `spider` SET `content` = %s, `content_length` = %d, `status` = 1 WHERE `url_hash` = %s", (content, len(content), md5.md5(seed).hexdigest()))
 
 ###
 
@@ -104,10 +111,13 @@ def getURLsFromDb(limit=5):
 ###
 
 def getContentFromURL(url):
-	# Get the content, return raw
+	# Get the content, return dict with content + time_taken (in millis)
 	req = ul.Request(url)
-	response = ul.urlopen(req)
-	return response.read()
+	start = time.time() * 1000
+	response = ul.urlopen(req).read()
+	end = time.time() * 1000
+
+	return { 'content': response, 'time_taken': int(round(end - start)) }
 
 ###
 
@@ -131,4 +141,6 @@ def extractURLs(content):
 
 def insertContent(url, parent, content, time_taken):
 	cur = mdb.cursor()
-	cur.execute("INSERT INTO spider VALUES (NULL, %s, %s, %s, 0, %d, %s, %d, NOW(), 0)", (url, md5.md5(url).hexdigest(), parent, len(content), content, time_taken))
+	cur.execute("SELECT id FROM spider WHERE url_hash = %s", (md5.md5(parent).hexdigest()))
+	parentId = cur.fetchone()
+	cur.execute("INSERT INTO `spider` VALUES (NULL, %s, %s, %s, 0, %d, %s, %d, NOW(), 0)", (url, md5.md5(url).hexdigest(), parentId, len(content), content, time_taken))
