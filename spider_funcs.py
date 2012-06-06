@@ -53,7 +53,7 @@ def createTable():
 		# Create the table
 		cur.execute(sql)
 	else:
-		logMessage("Detected MySQL 5.5 with innodb_file_per_table. Adding row compression.", log, verbose)
+		logMessage("Table exists.", log, verbose)
 
 ###
 
@@ -65,9 +65,7 @@ def addSeed(seed):
 	content = getContentFromURL(seed)
 	urls = extractURLs(content)
 	for items in urls:
-
-
-	cur.execute("UPDATE `spider` SET `content` = %s, `content_length` = %d, `status` = 1 WHERE `url_hash` = %s", (content, len(content), md5.md5(seed).hexdigest()))
+		cur.execute("UPDATE `spider` SET `content` = %s, `content_length` = %d, `status` = 1 WHERE `url_hash` = %s", (content, len(content), md5.md5(seed).hexdigest()))
 
 ###
 
@@ -104,8 +102,7 @@ def getURLsFromDb(limit=5):
 	cur = mdb.cursor()
 	cur.execute("SELECT `url` FROM `spider` WHERE `status` = 0 LIMIT %d", (limit))
 	rows = cur.fetchall()
-	for i in rows:
-		cur.execute("UPDATE `urls` SET `status` = 1 WHERE `id` = %d", (i["id"]))
+	cur.execute("UPDATE `urls` SET `status` = 1 WHERE `id` = %d", (",".join(i["id"])) )
 	return rows
 
 ###
@@ -127,9 +124,10 @@ def extractURLs(content):
 	for link in soup.find_all('a'):
 		urls.append(link.get('href'))
 
-	uniq = set(urls)
+	uniq = set(urls) #Yay, uniqueness just by changing the type from a list to a set!
 	fixedlist = []
 
+	# filter our list of URLs down to items that begin with http
 	for url in uniq:
 		strurl = str(url)
 		if strurl.startswith('http'):
@@ -143,4 +141,4 @@ def insertContent(url, parent, content, time_taken):
 	cur = mdb.cursor()
 	cur.execute("SELECT id FROM spider WHERE url_hash = %s", (md5.md5(parent).hexdigest()))
 	parentId = cur.fetchone()
-	cur.execute("INSERT INTO `spider` VALUES (NULL, %s, %s, %s, 0, %d, %s, %d, NOW(), 0)", (url, md5.md5(url).hexdigest(), parentId, len(content), content, time_taken))
+	cur.execute("INSERT INTO `spider` VALUES (NULL, %s, %s, %s, 0, %d, %s, %d, NOW(), 0)", (url, md5.md5(url).hexdigest(), parentId["id"], len(content), content, time_taken))

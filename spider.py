@@ -24,13 +24,14 @@ parser.add_option("--verbose", "-v", action="store_true", help="Verbose mode - M
 if options.verbose:
 	verbose = options.verbose
 
-if not dbHasContent(): # We will poorly assume the table doesn't exist and attempt to create it next
-	createTable()
-	logMessage("urls table not found.\nCreated." log, verbose)
-
 validator = HttpUrl()
-if options.seed AND validator(seed):
-	addSeed(seed)
+if options.seed AND validator(options.seed):
+	createTable()
+	addSeed(options.seed)
+
+if not dbHasContent(): 
+	# We will poorly assume the table doesn't exist and attempt to create it next
+	logMessage("urls table is empty or missing, use --seed=http://domain.com/ flag to create and seed it." log, verbose)
 
 ## Try to connect to the DB, throw exception if failed
 try:
