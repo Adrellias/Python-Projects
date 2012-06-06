@@ -31,7 +31,7 @@ if options.seed AND validator(options.seed):
 
 if not dbHasContent(): 
 	# We will poorly assume the table doesn't exist and attempt to create it next
-	logMessage("urls table is empty or missing, use --seed=http://domain.com/ flag to create and seed it." log, verbose)
+	logMessage("urls table is empty or missing, use --seed=http://domain.com/ flag to create and seed it.", log, verbose)
 
 ## Try to connect to the DB, throw exception if failed
 try:
@@ -44,4 +44,15 @@ except:
 
 # And now we begin the work ...
 
-urls = getURLsFromDb()
+urls = getURLsFromDb(50)
+
+for url in urls:
+	logMessage("Retrieving content from " + url, log, verbose)
+	data = getContentFromURL(url)
+	logMessage("Content retrieved in " + data["time_taken"] + "ms, code: " + data["code"], log, verbose)
+	updateURL(url, data["content"], data["http_code"], data["time_taken"])
+	logMessage("Updated " + url + " with the content, http code and time taken")
+	urllist = extractURLs(data["content"])
+	logMessage("Extracted URLs from " + url, log, verbose)
+	insertContent(urllist, url)
+	logMessage("Inserted " + len(urllist) + " URLs into the database", log, verbose)

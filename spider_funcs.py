@@ -1,3 +1,5 @@
+###
+
 def getConfig():
 	conf = ConfigParser.ConfigParser()
 	if not os.path.exists("./spider.conf"):
@@ -29,11 +31,11 @@ def getConfig():
 def createTable():
 	sql = "CREATE TABLE IF NOT EXISTS spider (  "
 	sql += "`id` int not null primary key auto_increment, `url` TEXT, url_hash char(32) UNIQUE,"
-	sql += " `parent_url` int, `status` tinyint, `content_size` int, `content` LONGTEXT,"
-	sql += " `time_taken` int, `created` datetime, `is_seed` tinyint default 0, INDEX(`created`), INDEX(`url_hash`)"
+	sql += " `parent_url` int, `status` tinyint, `content_size` int, `content` LONGTEXT, `http_code` int,"
+	sql += " `time_taken` int, `created` datetime, INDEX(`created`), INDEX(`url_hash`)"
 	sql += " ) engine=innodb"
 
-	cur = mdb.cursor()
+	cur = con.cursor()
 	cur.execute("SHOW TABLES LIKE 'spider'")
 	exists = cur.fetchone()
 	if len(exists) == 0:
@@ -59,7 +61,7 @@ def createTable():
 
 def addSeed(seed):
 	# Stuff it in the DB and fetch it prior to moving on.
-	cur = mdb.cursor()
+	cur = con.cursor()
 	cur.execute("TRUNCATE TABLE `spider`") 
 	cur.execute("INSERT INTO `spider` VALUES (NULL, %s, %s, '', 0, 0, 0, 0, NOW(), 1)", (seed, md5.md5(seed).hexdigest()))
 	content = getContentFromURL(seed)
@@ -86,7 +88,7 @@ def logMessage(message, log, verbose):
 
 def dbHasContent():
 	# This is where we assume that we have a seed url if count != 0 
-	cur = mdb.cursor()
+	cur = con.cursor()
 	cur.execute("SELECT COUNT(*) as cnt FROM `spider`")
 	data = cur.fetchone()
 
@@ -99,7 +101,7 @@ def dbHasContent():
 
 def getURLsFromDb(limit=5):
 	# Get URLs from DB, limited to limit
-	cur = mdb.cursor()
+	cur = con.cursor()
 	cur.execute("SELECT `url` FROM `spider` WHERE `status` = 0 LIMIT %d", (limit))
 	rows = cur.fetchall()
 	cur.execute("UPDATE `urls` SET `status` = 1 WHERE `id` = %d", (",".join(i["id"])) )
@@ -111,10 +113,19 @@ def getContentFromURL(url):
 	# Get the content, return dict with content + time_taken (in millis)
 	req = ul.Request(url)
 	start = time.time() * 1000
-	response = ul.urlopen(req).read()
+	response = ul.urlopen(req)
+
+	logMessage("Retrieving content from " + url, log, verbose)
+
+	content = response.read()
+	code = response.getcode()
 	end = time.time() * 1000
 
-	return { 'content': response, 'time_taken': int(round(end - start)) }
+	time_taken = int(round(end - start))
+
+	logMessage("Content retrieved in " + time_taken + "ms, code: " + code, log, verbose)
+
+	return { 'content': content, 'http_code': code, 'time_taken': time_taken }
 
 ###
 
@@ -137,8 +148,16 @@ def extractURLs(content):
 
 ###
 
-def insertContent(url, parent, content, time_taken):
-	cur = mdb.cursor()
+def insertContent(urllist, parent):
+	cur = con.cursor()
 	cur.execute("SELECT id FROM spider WHERE url_hash = %s", (md5.md5(parent).hexdigest()))
 	parentId = cur.fetchone()
-	cur.execute("INSERT INTO `spider` VALUES (NULL, %s, %s, %s, 0, %d, %s, %d, NOW(), 0)", (url, md5.md5(url).hexdigest(), parentId["id"], len(content), content, time_taken))
+	for item in urllist:
+		cur.execute("INSERT INTO `spider` (id, url, url_hash, parent_url, created) VALUES (NULL, %s, %s, %d, NOW())", (item, md5.md5(item).hexdigest(), parentId["id"]))
+
+###
+
+def updateURL(url, content, http_code, time_taken):
+	cur = con.cursor()
+	cur.execute("UPDATE `spider` SET `content` = %s, `content_size` = %d, `http_code` = %d, `time_taken` = %d WHERE `url` = %s", (content, len(content), http_code, time_taken, md5.md5(url).hexdigest()))
+	logMessage("Updated " + url + " - Content Length: " + len(content) + ", HTTP Code: " + http_code + ", Time Taken: " + time_taken + "ms", log, verbose)
