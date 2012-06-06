@@ -21,6 +21,8 @@ parser.add_option("--verbose", "-v", action="store_true", help="Verbose mode - M
 
 ###
 
+conf = getConfig()
+
 if options.verbose:
 	verbose = options.verbose
 
@@ -35,7 +37,7 @@ if not dbHasContent():
 
 ## Try to connect to the DB, throw exception if failed
 try:
-	con = mdb.connect(dbhost, dbuser, dbpass, dbname)
+	con = mdb.connect(conf["dbhost"], conf["dbuser"], conf["dbpass"], conf["dbname"])
 	logMessage("Connected to database Server.", log, verbose)
 except:
 	err = "Error %d: %s" % (e.args[0], e.args[1])
@@ -47,11 +49,8 @@ except:
 urls = getURLsFromDb(50)
 
 for url in urls:
-	logMessage("Retrieving content from " + url, log, verbose)
 	data = getContentFromURL(url)
-	logMessage("Content retrieved in " + data["time_taken"] + "ms, code: " + data["code"], log, verbose)
 	updateURL(url, data["content"], data["http_code"], data["time_taken"])
-	logMessage("Updated " + url + " with the content, http code and time taken")
 	urllist = extractURLs(data["content"])
 	logMessage("Extracted URLs from " + url, log, verbose)
 	insertContent(urllist, url)
