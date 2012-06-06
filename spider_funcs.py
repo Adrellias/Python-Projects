@@ -13,6 +13,8 @@ def getConfig():
 		conf.set("Default", "urls-per-pass", 50)
 		conf.write(conffile)
 		conffile.close
+		logMessage("Config file created. Edit it and then re-run with --seed=http://your.starter.website.com/, add --verbose if you would like to see messages on-screen", log, verbose)
+		sys.exit(1)
 	else:
 		conf.read("./spider.conf")
 		opts = conf.options("Default")
@@ -23,7 +25,7 @@ def getConfig():
 		dbuser = conf.get("Default", "dbuser")
 		dbpass = conf.get("Default", "dbpass")
 		dbname = conf.get("Default", "dbname")
-
+		
 		return { 'log': log, 'perpass': perpass, 'dbhost': dbhost, 'dbuser': dbuser, 'dbpass': dbpass, 'dbname': dbname }
 
 ###
