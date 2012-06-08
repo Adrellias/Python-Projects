@@ -68,8 +68,10 @@ def addSeed(seed):
 	cur.execute("INSERT INTO `spider` VALUES (NULL, %s, %s, '', 0, 0, 0, 0, NOW(), 1)", (seed, md5.md5(seed).hexdigest()))
 	content = getContentFromURL(seed)
 	urls = extractURLs(content)
+	cur.execute("SELECT id FROM spider WHERE url_hash = %s", (md5.md5(parent).hexdigest()))
+	parentId = cur.fetchone()
 	for items in urls:
-		cur.execute("UPDATE `spider` SET `content` = %s, `content_length` = %d, `status` = 1 WHERE `url_hash` = %s", (content, len(content), md5.md5(seed).hexdigest()))
+		cur.execute("UPDATE `spider` SET `parent_url` = %d, `content` = %s, `content_length` = %d, `status` = 1 WHERE `url_hash` = %s", (parentId["id"], content, len(content), md5.md5(seed).hexdigest()))
 
 ###
 
