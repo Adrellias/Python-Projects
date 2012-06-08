@@ -1,6 +1,6 @@
 import os
 import sys
-import time ## for timing the ul.urlopen process
+import time
 import smtplib
 import ConfigParser
 import urllib2 as ul
@@ -35,9 +35,9 @@ def getConfig():
 		seconds = raw_input("Enter the number of seconds to wait between checks: ")
 
 		conf.add_section("tool")
-		conf.set("tool", "to_email", "my@emailaddress.com")
-		conf.set("tool", "from_email", "from@emailaddress.com")
-		conf.set("tool", "seconds-between-checks", 60)
+		conf.set("tool", "to_email", to_email)
+		conf.set("tool", "from_email", from_email)
+		conf.set("tool", "seconds-between-checks", seconds)
 
 		conf.write(conffile)
 		conffile.close
