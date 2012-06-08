@@ -28,7 +28,7 @@ def sendEmail(from_email, to_email):
 def getConfig():
 	conf = ConfigParser.ConfigParser()
 	if not os.path.exists("./mcs_checker.conf"):
-		conffile = open("./mcs_checker", "w")
+		conffile = open("./mcs_checker.conf", "w")
 
 		to_email = raw_input("Enter the TO EMail Address: ")
 		from_email = raw_input("Enter the FROM EMail Address: ")
