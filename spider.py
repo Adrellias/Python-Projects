@@ -1,13 +1,10 @@
 #!/opt/python273/bin/python
 
-import os
-import sys
-import md5
-import time ## for timing the ul.urlopen process
+import os, sys, md5
 import ConfigParser
 import urllib2 as ul
-from bs4 import BeautifulSoup
 from optparse import OptionParser
+from bs4 import BeautifulSoup
 from time import gmtime, strftime
 from lepl.apps.rfc3696 import HttpUrl
 
@@ -48,10 +45,15 @@ except:
 
 urls = getURLsFromDb(50)
 
-for url in urls:
-	data = getContentFromURL(url)
-	updateURL(url, data["content"], data["http_code"], data["time_taken"])
-	urllist = extractURLs(data["content"])
-	logMessage("Extracted URLs from " + url, log, verbose)
-	insertContent(urllist, url)
-	logMessage("Inserted " + len(urllist) + " URLs into the database", log, verbose)
+while(1):
+	try:
+		for url in urls:
+			data = getContentFromURL(url)
+			updateURL(url, data["content"], data["http_code"], data["time_taken"])
+			urllist = extractURLs(data["content"])
+			logMessage("Extracted URLs from " + url, log, verbose)
+			insertContent(urllist, url)
+			logMessage("Inserted " + len(urllist) + " URLs into the database", log, verbose)
+	except KeyboardInterrupt:
+		print "\nCaught KeyboardInterrupt Exception, exiting ..."
+		sys.exit(0)
