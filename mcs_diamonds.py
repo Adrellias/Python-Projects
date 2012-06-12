@@ -6,7 +6,6 @@ import smtplib
 import ConfigParser
 import urllib2 as ul
 from bs4 import BeautifulSoup
-import pprint
 
 def sendEmail(from_email, to_email):
 		# Send an SMS to user@txtservice.tld
