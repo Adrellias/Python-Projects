@@ -1,22 +1,24 @@
 import os
 import sys
 import time
+import string
 import smtplib
 import ConfigParser
 import urllib2 as ul
 from bs4 import BeautifulSoup
+import pprint
 
 def sendEmail(from_email, to_email):
 		# Send an SMS to user@txtservice.tld
 	SUBJECT = "Test email from Python"
-	TO = conf["to_user"]
-	FROM = conf["from_user"]
+	TO = to_email
+	FROM = from_email
 	text = "There's a spot open at minecraftserver.net!"
 
 	BODY = string.join((
 		"FROM: %s" % FROM,
 		"TO: %s" % TO,
-		"SUBJECT: %s" % SUBJECT ,
+		"SUBJECT: %s" % SUBJECT,
 		"",
 		text
 	), "\r\n")
@@ -30,19 +32,17 @@ def getConfig():
 	if not os.path.exists("./mcs_checker.conf"):
 		conffile = open("./mcs_checker.conf", "w")
 
-		to_email = raw_input("Enter the TO EMail Address: ")
-		from_email = raw_input("Enter the FROM EMail Address: ")
-		seconds = raw_input("Enter the number of seconds to wait between checks: ")
+		te = raw_input("Enter the TO EMail Address: ")
+		fe = raw_input("Enter the FROM EMail Address: ")
+		sbc = raw_input("Enter the number of seconds to wait between checks: ")
 
 		conf.add_section("tool")
-		conf.set("tool", "to_email", to_email)
-		conf.set("tool", "from_email", from_email)
-		conf.set("tool", "seconds-between-checks", seconds)
+		conf.set("tool", "to_email", te)
+		conf.set("tool", "from_email", fe)
+		conf.set("tool", "seconds-between-checks", sbc)
 
 		conf.write(conffile)
 		conffile.close
-		print "Config created (mcs_checker.conf) - edit and re-execute"
-		sys.exit(0)
 	else:
 		conf.read("./mcs_checker.conf")
 		opts = conf.options("tool")
