@@ -56,6 +56,7 @@ def createTable():
 
 		# Create the table
 		cur.execute(sql)
+		con.commit()
 	else:
 		logMessage("Table exists.", log, verbose)
 
@@ -72,6 +73,8 @@ def addSeed(seed):
 	parentId = cur.fetchone()
 	for items in urls:
 		cur.execute("UPDATE `spider` SET `parent_url` = %d, `content` = %s, `content_length` = %d, `status` = 1 WHERE `url_hash` = %s", (parentId["id"], content, len(content), md5.md5(seed).hexdigest()))
+
+	con.commit()
 
 ###
 
@@ -109,6 +112,7 @@ def getURLsFromDb(limit=5):
 	cur.execute("SELECT `url` FROM `spider` WHERE `status` = 0 LIMIT %d", (limit))
 	rows = cur.fetchall()
 	cur.execute("UPDATE `urls` SET `status` = 1 WHERE `id` = %d", (",".join(i["id"])) )
+	con.commit()
 	return rows
 
 ###
@@ -158,10 +162,12 @@ def insertContent(urllist, parent):
 	parentId = cur.fetchone()
 	for item in urllist:
 		cur.execute("INSERT INTO `spider` (id, url, url_hash, parent_url, created) VALUES (NULL, %s, %s, %d, NOW())", (item, md5.md5(item).hexdigest(), parentId["id"]))
+	con.commit()
 
 ###
 
 def updateURL(url, content, http_code, time_taken):
 	cur = con.cursor()
 	cur.execute("UPDATE `spider` SET `content` = %s, `content_size` = %d, `http_code` = %d, `time_taken` = %d WHERE `url` = %s", (content, len(content), http_code, time_taken, md5.md5(url).hexdigest()))
+	con.commit()
 	logMessage("Updated " + url + " - Content Length: " + len(content) + ", HTTP Code: " + http_code + ", Time Taken: " + time_taken + "ms", log, verbose)
