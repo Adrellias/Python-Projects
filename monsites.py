@@ -105,8 +105,6 @@ conf = getConfig()
 con = mdb.connect(conf["dbhost"], conf["dbuser"], conf["dbpass"], conf["dbname"])
 
 while(1):
-	
-	domStatusChange = 0
 
 	beVerbose("Getting list of domains ... ", conf["verbose"])
 	domlist = getDomainsForCheck()
