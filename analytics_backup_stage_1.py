@@ -89,7 +89,11 @@ for vevent in ve_slice:
 for mevent in me_slice:
 	cur.execute("SELECT * FROM " + mevent[0] + " INTO OUTFILE '" + backup_path + "\\" + mevent[0] + ".dat'")
 
-dat_count = len(glob.glob1(backup_path, "*.dat"))
+files = glob.glob1(backup_path, "*.dat")
+dat_count = len(files)
+
+for item in files:
+	subprocess
 
 if dat_count == expected_files:
 	newpath = "/" + year + "/" + month
