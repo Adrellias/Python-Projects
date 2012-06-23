@@ -15,7 +15,6 @@ def getConfig():
 		ftpuser = raw_input("Enter the FTP Username: ")
 		ftppass = raw_input("Enter the FTP Password: ")
 		ftpport = raw_input("Enter the FTP Port (Default: 21): ")
-
 		mcdir = raw_input("Enter the full path to your minecraft server directory (Ex: /home/minecraft/server): ")
 		compress = raw_input("Do you want to compress the backup? ( 0 = No, 1 = Yes ): ")
 		# keep_local = raw_input("Do you want to also keep a local copy of the backup? (Default: No): ")

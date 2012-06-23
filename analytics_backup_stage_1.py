@@ -4,6 +4,7 @@ import ConfigParser
 import urllib2 as ul
 import MySQLdb as mdb
 from ftplib import FTP
+from threading import Thread
 
 # Test+Setup MySQL Connection
 
@@ -56,7 +57,6 @@ cfg = getConfig()
 try:
 	con = mdb.connect(cfg["my_host"], cfg["my_user"], cfg["my_pass"], cfg["my_db"])
 except:
-	print "Failed to connect to database."
 	print "Error: %d : %s" % (e.args[0], e.args[1])
 
 # Test+Setup FTP Connection.
@@ -81,7 +81,7 @@ me = cur.fetchall()
 ve_slice = ve[:-2]
 me_slice = me[:-2]
 
-expected_files = len(me_slice) + len(ve_slice)
+expected_files_count = len(me_slice) + len(ve_slice)
 
 for vevent in ve_slice:
 	cur.execute("SELECT * FROM " + vevent[0] + " INTO OUTFILE '" + backup_path + "\\" + vevent[0] + ".dat'")
@@ -89,17 +89,17 @@ for vevent in ve_slice:
 for mevent in me_slice:
 	cur.execute("SELECT * FROM " + mevent[0] + " INTO OUTFILE '" + backup_path + "\\" + mevent[0] + ".dat'")
 
-files = glob.glob1(backup_path, "*.dat")
+files = glob.glob1(cfg["backup_path"], "*.dat")
 dat_count = len(files)
 
 for item in files:
-	subprocess
+	subprocess.call("7zip -some -flags " + item)
 
-if dat_count == expected_files:
+if dat_count == expected_files_count:
 	newpath = "/" + year + "/" + month
 	ftp.sendcmd("MKDIR " newpath)
 	ftp.cwd(newpath)
-	for item in os.listdir(cfg["backup_path"]):
+	for item in glob.glob1(cfg["backup_path"], "*.7z"):
 		f = open(item, "r")
 		ftp.storbinary("STOR "+ item +, f)
 		f.close()
