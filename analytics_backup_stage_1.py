@@ -4,9 +4,6 @@ import ConfigParser
 import urllib2 as ul
 import MySQLdb as mdb
 from ftplib import FTP
-from threading import Thread
-
-# Test+Setup MySQL Connection
 
 def getConfig():
 	conf = ConfigParser.ConfigParser()
