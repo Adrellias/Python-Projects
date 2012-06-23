@@ -5,6 +5,8 @@ import subprocess
 import ConfigParser
 from ftplib import FTP
 
+# Test
+
 def getConfig():
 	conf = ConfigParser.ConfigParser()
 	cfile = "pymcbackup.conf"
