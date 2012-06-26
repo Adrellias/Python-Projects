@@ -94,7 +94,7 @@ for item in files:
 
 if dat_count == expected_files_count:
 	newpath = "/" + year + "/" + month
-	ftp.sendcmd("MKDIR " newpath)
+	ftp.sendcmd("MKDIR " + newpath)
 	ftp.cwd(newpath)
 	for item in glob.glob1(cfg["backup_path"], "*.7z"):
 		f = open(item, "r")
