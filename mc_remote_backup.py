@@ -43,12 +43,18 @@ def getConfig():
 		compress = conf.getint("mcbackup", "compress")
 		# keep_local = conf.get("mcbackup", "keep_local") ## This is not yet implemented
 
-	return { 'ftphost': ftphost, 'ftpport': ftpport, 'ftpuser': ftpuser, 'ftppass': ftppass, 'minecraft_path': mcdir, 'keep_local': keep_local }
+	return { 'ftphost': ftphost, 'ftpport': ftpport, 'ftpuser': ftpuser, 'ftppass': ftppass, 'minecraft_path': mcdir }
 
 cfg = getConfig()
 
-def doBackup():
+def mcDirExists():
 	if os.path.exists(cfg["mcdir"]):
+		return True
+	else:
+		return False
+
+def doBackup():
+	if mcDirExists():
 		tar_extra_args = ""
 		ext = "tar"
 		if cfg["compress"] == 1:
@@ -56,4 +62,9 @@ def doBackup():
 			ext = "tgz"
 
 		dt = time.strftime("%Y_%m_%d_%H")
-		subprocess.call("/usr/bin/tar cf" + tar_extra_args + " /temp/minecraft_" + dt + ext +" " + cfg["mcdir"])
+		backup_file = "minecraft_" + dt + ext
+
+
+		subprocess.call("/usr/bin/tar cf" + tar_extra_args + " /temp/" + backup_file " " + cfg["mcdir"])
+
+		ftpUpload(backup_file)

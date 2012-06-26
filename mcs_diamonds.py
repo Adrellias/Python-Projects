@@ -7,24 +7,10 @@ import ConfigParser
 import urllib2 as ul
 from bs4 import BeautifulSoup
 
-def sendEmail(from_email, to_email):
-		# Send an SMS to user@txtservice.tld
-	SUBJECT = "Test email from Python"
-	TO = to_email
-	FROM = from_email
-	text = "There's a spot open at minecraftserver.net!"
-
-	BODY = string.join((
-		"FROM: %s" % FROM,
-		"TO: %s" % TO,
-		"SUBJECT: %s" % SUBJECT,
-		"",
-		text
-	), "\r\n")
-
-	server = smtplib.SMTP("localhost")
-	server.sendmail(FROM, TO, BODY)
-	server.quit()
+def sendEmail(url):
+	# Get the content, return dict with content + time_taken (in millis)
+	req = ul.Request(url)
+	response = ul.urlopen(req)
 
 def getConfig():
 	conf = ConfigParser.ConfigParser()
@@ -70,7 +56,7 @@ while(1):
 	try:
 		content = getContentFromURL("http://minecraftservers.net")
 		if getTotalDiamonds(content) < 10:
-			sendEmail(conf["from_email"], conf["to_email"])
+			sendEmail("http://bettercraft.net/stats/file.php")
 			#print "Less than ten items! A spot is open!"
 		time.sleep(conf["sbc"])
 	except KeyboardInterrupt:
